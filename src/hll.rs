@@ -23,6 +23,7 @@ use std::{
 };
 
 const TWO_POW_32: f64 = (1_i64 << 32_i64) as f64;
+const ERROR_RATE: f64 = 0.008;
 
 pub struct HyperLogLog {
     pub b: usize,
@@ -31,8 +32,6 @@ pub struct HyperLogLog {
     m: Vec<u8>,
     alpha: f64,
 }
-
-const ERROR_RATE: f64 = 0.008;
 
 impl HyperLogLog {
     pub fn new() -> Result<Self, String> {
@@ -104,6 +103,7 @@ impl HyperLogLog {
             large_range => -TWO_POW_32 * (1.0 - large_range / TWO_POW_32).ln(),
         }
     }
+
     pub fn count(&self) -> usize {
         let mut z = 0.0;
         let mut empty_counters = 0;
@@ -121,6 +121,13 @@ impl HyperLogLog {
         let estimate = self.alpha * m_counters.powi(2) / z;
         self.range_correction(estimate, m_counters, empty_counters) as usize
     }
+
+    pub fn merge(mut self, other: HyperLogLog) {
+        for j in 0..self.m.len() {
+            self.m[j] = std::cmp::max(self.m[j], other.m[j]);
+        }
+    }
+
     pub fn error(self) -> f64 {
         1.04 / ((1 << self.b) as f64).sqrt()
     }
