@@ -40,9 +40,10 @@ impl HyperLogLog {
          * b, amount of bits to use from hash
          *   b = log2(m)
          * m, number of counter buckets
-         *   m = (1.04 / sqrt(m))^2
+         *   error_rate = 1.04 / sqrt(m)
+         *   m = (1.04 / error_rate)^2
          * therefore,
-         *   b = log2((1.04 / sqrt(m))^2)
+         *   b = log2((1.04 / error_rate)^2)
          */
         let b = (1.04 / ERROR_RATE).powi(2).log2().ceil() as usize;
 
